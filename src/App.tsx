@@ -1,12 +1,23 @@
-import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import AuthPage from './pages/AuthPage';
+import ProfilePage from './pages/ProfilePage';
+import FeedPage from './pages/FeedPage';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-blue-500">Welcome to Social Media App</h1>
-      <p className="text-lg text-gray-600 mt-4">Tailwind CSS is working!</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<AuthPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/feed" element={<FeedPage />} />
+      </Routes>
+    </Router>
   );
-};
+}
 
 export default App;
+
+
+
+
+
