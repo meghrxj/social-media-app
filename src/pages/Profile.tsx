@@ -3,6 +3,8 @@ import { supabase } from '../supabaseClient';
 import { FiLogOut } from 'react-icons/fi'; // Logout icon
 import { FaRegCalendarAlt } from 'react-icons/fa'; // Date icon
 import { HiOutlineUserCircle } from 'react-icons/hi'; // Profile icon
+import { Link } from "react-router-dom";
+import { HiHome, HiBell, HiUser, HiUsers } from "react-icons/hi"; // Import icons
 
 const Profile: React.FC = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -66,6 +68,29 @@ const Profile: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
       {/* Profile Header */}
+
+      <header className="w-full flex justify-between mb-4 items-center">
+        <h1 className="text-2xl font-semibold">IGX</h1>
+        <nav className="flex space-x-6">
+          <Link to="/home" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiHome size={24} />
+            <span className="text-sm">Home</span>
+          </Link>
+          <Link to="/notification" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiBell size={24} />
+            <span className="text-sm">Notifications</span>
+          </Link>
+          <Link to="/people" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiUsers size={24} />
+            <span className="text-sm">People</span>
+          </Link>
+          <Link to="/profile" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiUser size={24} />
+            <span className="text-sm">Profile</span>
+          </Link>
+        </nav>
+      </header>
+
       <div className="flex flex-col items-center mb-6">
         <div className="relative">
           <HiOutlineUserCircle className="w-32 h-32 text-gray-400" />

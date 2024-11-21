@@ -170,7 +170,7 @@ const Feed: React.FC = () => {
 
       {/* Feed Section */}
       <div className="w-full">
-        <h2 className="text-2xl font-semibold mb-4">News Feed</h2>
+        <h2 className="text-2xl font-semibold mb-4">Your Feed</h2>
         {posts.length === 0 ? (
           <p className="text-center text-gray-500">No posts to show yet.</p>
         ) : (

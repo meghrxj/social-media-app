@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { HiUserAdd, HiAtSymbol } from "react-icons/hi";  // Import appropriate icons
+import { Link } from "react-router-dom";
+import { HiHome, HiBell, HiUser, HiUsers } from "react-icons/hi"; // Import icons
 
 const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -114,6 +116,27 @@ const NotificationsPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto bg-white p-6 rounded-lg shadow-xl">
+      <header className="w-full flex justify-between mb-4 items-center">
+        <h1 className="text-2xl font-semibold">IGX</h1>
+        <nav className="flex space-x-6">
+          <Link to="/home" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiHome size={24} />
+            <span className="text-sm">Home</span>
+          </Link>
+          <Link to="/notification" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiBell size={24} />
+            <span className="text-sm">Notifications</span>
+          </Link>
+          <Link to="/people" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiUsers size={24} />
+            <span className="text-sm">People</span>
+          </Link>
+          <Link to="/profile" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
+            <HiUser size={24} />
+            <span className="text-sm">Profile</span>
+          </Link>
+        </nav>
+      </header>
       <h2 className="text-2xl font-semibold mb-6 text-center">Notifications</h2>
 
       <div>
