@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { HiUserAdd, HiAtSymbol } from "react-icons/hi";  // Import appropriate icons
-import { Link } from "react-router-dom";
-import { HiHome, HiBell, HiUser, HiUsers } from "react-icons/hi"; // Import icons
+import { HiUserAdd, HiAtSymbol } from "react-icons/hi"; // Import appropriate icons
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import NavButtons from "../components/NavButtons"; // Import the reusable NavButtons component
 
 const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);  // To store the user's UUID
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // To store the user's UUID
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Fetch logged-in user's username and ID
   useEffect(() => {
@@ -30,7 +31,7 @@ const NotificationsPage: React.FC = () => {
       }
 
       setCurrentUser(userData.username);
-      setCurrentUserId(userData.id);  // Store the user's UUID
+      setCurrentUserId(userData.id); // Store the user's UUID
     };
 
     fetchCurrentUser();
@@ -43,13 +44,13 @@ const NotificationsPage: React.FC = () => {
         const { data, error } = await supabase
           .from("posts")
           .select("id, content, username, mentions, created_at")
-          .contains("mentions", [currentUser])  // Fetch mentions
+          .contains("mentions", [currentUser]) // Fetch mentions
           .order("created_at", { ascending: false });
 
         if (error) {
           console.error("Error fetching mentions:", error.message);
         }
-        return data || [];  // Always return an empty array if no data
+        return data || []; // Always return an empty array if no data
       };
 
       const fetchFollows = async () => {
@@ -69,7 +70,7 @@ const NotificationsPage: React.FC = () => {
             const { data: followerData, error: userError } = await supabase
               .from("users")
               .select("username")
-              .eq("id", follow.follower_id)  // Fetch username using follower_id (UUID)
+              .eq("id", follow.follower_id) // Fetch username using follower_id (UUID)
               .single();
 
             if (userError) {
@@ -78,7 +79,7 @@ const NotificationsPage: React.FC = () => {
 
             return {
               type: "follow",
-              sender_username: followerData?.username || "Unknown User",  // Use the username of the follower
+              sender_username: followerData?.username || "Unknown User", // Use the username of the follower
               created_at: follow.created_at,
             };
           }) || []
@@ -102,9 +103,9 @@ const NotificationsPage: React.FC = () => {
           })),
           ...follows.map((follow) => ({
             type: "follow",
-            sender_username: follow.sender_username,  // Use the username from the follows
+            sender_username: follow.sender_username, // Use the username from the follows
             created_at: follow.created_at,
-          }))
+          })),
         ];
 
         setNotifications(combinedNotifications);
@@ -115,27 +116,9 @@ const NotificationsPage: React.FC = () => {
   }, [currentUser, currentUserId]);
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-6 rounded-lg shadow-xl">
-      <header className="w-full flex justify-between mb-4 items-center">
-        <h1 className="text-2xl font-semibold">IGX</h1>
-        <nav className="flex space-x-6">
-          <Link to="/home" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
-            <HiHome size={24} />
-            <span className="text-sm">Home</span>
-          </Link>
-          <Link to="/notification" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
-            <HiBell size={24} />
-            <span className="text-sm">Notifications</span>
-          </Link>
-          <Link to="/people" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
-            <HiUsers size={24} />
-            <span className="text-sm">People</span>
-          </Link>
-          <Link to="/profile" className="flex flex-col items-center text-blue-600 hover:text-blue-800">
-            <HiUser size={24} />
-            <span className="text-sm">Profile</span>
-          </Link>
-        </nav>
+    <div className="w-full max-w-md mx-auto bg-white p-6 items-center">
+      <header className="w-full flex justify-center mb-4 items-center">
+        <NavButtons /> {/* Use the reusable NavButtons component */}
       </header>
       <h2 className="text-2xl font-semibold mb-6 text-center">Notifications</h2>
 
@@ -155,13 +138,11 @@ const NotificationsPage: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="font-semibold text-gray-800">
-                    {notification.sender_username} {notification.type === 'follow' ? 'followed you' : 'mentioned you'}
+                    {notification.sender_username} {notification.type === "follow" ? "followed you" : "mentioned you"}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-gray-500">
-                {/* Optionally, add timestamp or icon logic */}
-              </div>
+              <div className="text-sm text-gray-500">{/* Optionally, add timestamp or icon logic */}</div>
             </div>
           ))
         )}
@@ -171,6 +152,7 @@ const NotificationsPage: React.FC = () => {
 };
 
 export default NotificationsPage;
+
 
 
 

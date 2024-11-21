@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient"; // Ensure you've set up Supabase client
 import { MagnifyingGlassIcon } from '@heroicons/react/24/solid'; // Importing search icon from Heroicons
+import NavButtons from "../components/NavButtons"; // Import the reusable NavButtons component
 
 const People = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -143,8 +144,12 @@ const People = () => {
   }, [searchTerm]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-topmin-h-screen">
       <div className="w-full max-w-xl p-4">
+      <header className="w-full flex justify-between mb-4 items-center">
+        <h1 className="text-2xl font-semibold">IGX</h1>
+        <NavButtons /> {/* Use the reusable NavButtons component */}
+      </header>
         {/* Search bar */}
         <div className="relative mb-6">
           <input

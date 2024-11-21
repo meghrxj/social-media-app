@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { FiMail, FiLock } from 'react-icons/fi'; // Icons for email and password
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'; // Loading spinner
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleAuth = async () => {
     setLoading(true);
@@ -29,16 +31,16 @@ const AuthPage: React.FC = () => {
         if (profileError) throw profileError;
 
         if (userProfile?.username) {
-          window.location.href = '/home';
+          navigate('/home'); // Navigate to home page
         } else {
-          window.location.href = '/username';
+          navigate('/username'); // Navigate to username page
         }
       } else {
         // Signing the user up
         const { data: signupData, error: signupError } = await supabase.auth.signUp({ email, password });
         if (signupError) throw signupError;
 
-        window.location.href = '/username';
+        navigate('/username'); // Navigate to username page
       }
     } catch (err: any) {
       setError(err.message);
@@ -125,3 +127,4 @@ const AuthPage: React.FC = () => {
 };
 
 export default AuthPage;
+

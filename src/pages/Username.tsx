@@ -1,24 +1,25 @@
-// src/pages/Username.tsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 
 const Username: React.FC = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null); // Track the user object
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) {
-        window.location.href = '/'; // Redirect to login if no user
+        navigate('/'); // Redirect to login if no user
       } else {
         setUser(user); // Set the user object to state
       }
     };
     fetchUser();
-  }, []);
+  }, [navigate]); // Add navigate as a dependency
 
   const handleSaveUsername = async () => {
     if (!user) {
@@ -49,7 +50,7 @@ const Username: React.FC = () => {
       }
 
       console.log('Username saved successfully!');
-      window.location.href = '/profile'; // Redirect to profile page after saving username
+      navigate('/profile'); // Redirect to profile page after saving username
     } catch (err: any) {
       setError(err.message);
     } finally {
