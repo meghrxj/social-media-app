@@ -17,14 +17,28 @@ const AuthPage: React.FC = () => {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         console.log('Login successful!');
-        window.location.href = "/feed"; // Redirecting to the feed page directly after login
+        
+        // Check if the user has set a username
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('username')
+          .eq('email', email)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (userProfile?.username) {
+          window.location.href = "/home"; // Redirect to home page if username is set
+        } else {
+          window.location.href = "/username"; // Redirect to username setup page
+        }
       } else {
         // Signing the user up
         const { data: signupData, error: signupError } = await supabase.auth.signUp({ email, password });
         if (signupError) throw signupError;
 
         console.log('Signup successful! Check your email for verification.');
-        window.location.href = "/profile"; // Redirecting to the profile page to set the username
+        window.location.href = "/username"; // Redirect to the username page to set the username
       }
     } catch (err: any) {
       setError(err.message);
@@ -72,6 +86,7 @@ const AuthPage: React.FC = () => {
 };
 
 export default AuthPage;
+
 
 
 

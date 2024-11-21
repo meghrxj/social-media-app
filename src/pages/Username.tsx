@@ -1,7 +1,8 @@
+// src/pages/Username.tsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const ProfilePage: React.FC = () => {
+const Username: React.FC = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ const ProfilePage: React.FC = () => {
       }
 
       console.log('Username saved successfully!');
-      window.location.href = '/feed'; // Redirect to feed after saving username
+      window.location.href = '/profile'; // Redirect to profile page after saving username
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -78,6 +79,7 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default Username;
+
 
 

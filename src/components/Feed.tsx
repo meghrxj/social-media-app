@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { useNavigate } from "react-router-dom";
 
-const FeedPage: React.FC = () => {
+const Feed: React.FC = () => {
   const [content, setContent] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [posts, setPosts] = useState<any[]>([]);
   const [usernames, setUsernames] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null); // Store logged-in username
-  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   // Fetch posts with mentions and username
   useEffect(() => {
@@ -120,21 +118,18 @@ const FeedPage: React.FC = () => {
       const mentionRegex = /@(\w+)/g;
       const mentions = [...content.matchAll(mentionRegex)].map((match) => match[1]);
 
-      const { error } = await supabase.from("posts").insert([
-        {
-          user_id: userId,
-          username: username,
-          content: content,
-          image_url: imageUrl,
-          mentions: mentions,
-          created_at: new Date(),
-        },
-      ]);
+      const { error } = await supabase.from("posts").insert([{
+        user_id: userId,
+        username: username,
+        content: content,
+        image_url: imageUrl,
+        mentions: mentions,
+        created_at: new Date(),
+      }]);
 
       if (error) {
         console.error("Error inserting post:", error.message);
       } else {
-        console.log("Post created successfully!");
         setContent("");
         setImageUrl("");
 
@@ -150,57 +145,24 @@ const FeedPage: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error during logout:", error.message);
-        return;
-      }
-      console.log("Logout successful!");
-      navigate("/auth");
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  };
-
   // Highlight mentions in post content
   const highlightMentions = (text: string) => {
     const mentionRegex = /@(\w+)/g;
-
     return text.split(mentionRegex).map((part, index) => {
-      // Check if this part is a valid mention
       if (index % 2 === 1 && usernames.includes(part)) {
         const isCurrentUser = part === currentUser;
         return (
-          <span
-            key={index}
-            className={`font-bold ${
-              isCurrentUser ? "text-red-500" : "text-blue-600"
-            }`}
-          >
+          <span key={index} className={`font-bold ${isCurrentUser ? "text-red-500" : "text-blue-600"}`}>
             @{part}
           </span>
         );
       }
-
-      // Otherwise, return the text as is
       return part;
     });
   };
 
   return (
     <div className="flex flex-col items-center p-4 max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
-      {/* Logout Button */}
-      <div className="w-full flex justify-end mb-4">
-        <button
-          onClick={handleLogout}
-          className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
-      </div>
-
       {/* Posting Section */}
       <div className="w-full bg-gray-100 p-4 rounded-lg mb-4 relative">
         <h2 className="text-xl font-semibold mb-2">Create a Post</h2>
@@ -241,29 +203,19 @@ const FeedPage: React.FC = () => {
       </div>
 
       {/* Feed Section */}
-      <div className="w-full h-96 overflow-y-auto bg-gray-50 p-4 rounded-lg shadow-inner">
+      <div className="w-full flex flex-col space-y-4">
         <h2 className="text-2xl font-semibold mb-4">Feed</h2>
         {posts.length === 0 ? (
           <p className="text-center text-gray-500">No posts to show yet.</p>
         ) : (
           posts.map((post) => (
-            <div key={post.id} className="border-b py-4 mb-4">
+            <div key={post.id} className="border border-gray-300 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
               <div className="flex items-center mb-2">
                 <p className="font-semibold text-blue-600">{post.username}</p>
-                <p className="text-sm text-gray-500 ml-2">
-                  {new Date(post.created_at).toLocaleString()}
-                </p>
+                <p className="text-sm text-gray-500 ml-2">{new Date(post.created_at).toLocaleString()}</p>
               </div>
-              <p className="text-gray-800 mb-2">
-                {highlightMentions(post.content)}
-              </p>
-              {post.image_url && (
-                <img
-                  src={post.image_url}
-                  alt="Post"
-                  className="w-full h-auto rounded"
-                />
-              )}
+              <p className="text-gray-800 mb-2">{highlightMentions(post.content)}</p>
+              {post.image_url && <img src={post.image_url} alt="Post" className="w-full h-auto rounded" />}
             </div>
           ))
         )}
@@ -272,12 +224,6 @@ const FeedPage: React.FC = () => {
   );
 };
 
-export default FeedPage;
-
-
-
-
-
-
+export default Feed;
 
 
