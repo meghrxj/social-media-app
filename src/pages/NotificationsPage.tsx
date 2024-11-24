@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { HiUserAdd, HiAtSymbol } from "react-icons/hi"; // Import appropriate icons
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import NavButtons from "../components/NavButtons"; // Import the reusable NavButtons component
+import { HiUserAdd, HiAtSymbol } from "react-icons/hi"; 
+import { useNavigate } from "react-router-dom"; 
+import NavButtons from "../components/NavButtons"; 
 
 const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // To store the user's UUID
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [notifications, setNotifications] = useState<any[]>([]); 
+  const [currentUser, setCurrentUser] = useState<string | null>(null); 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null); 
+  const navigate = useNavigate();
 
-  // Fetch logged-in user's username and ID
+  // fetch the logged-in user details (username and id)
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const { data, error } = await supabase.auth.getUser();
       if (error || !data?.user) {
-        console.error("Error fetching logged-in user:", error?.message);
+        console.error("Couldn't get the logged-in user:", error?.message);
         return;
       }
 
@@ -26,60 +26,62 @@ const NotificationsPage: React.FC = () => {
         .single();
 
       if (userFetchError || !userData) {
-        console.error("Error fetching current username and ID:", userFetchError?.message);
+        console.error("Couldn't fetch the user's username and ID:", userFetchError?.message);
         return;
       }
 
-      setCurrentUser(userData.username);
-      setCurrentUserId(userData.id); // Store the user's UUID
+      setCurrentUser(userData.username); // set username for temporary use
+      setCurrentUserId(userData.id); // uuid for the same
     };
 
     fetchCurrentUser();
   }, []);
 
-  // Fetch notifications for the current user (mentions and follows)
+  // fetching the notifications of the user from posts and followers table 
   useEffect(() => {
     if (currentUser && currentUserId) {
+      // fetching the mention where the temporary user was mentioned from the posts table
       const fetchMentions = async () => {
         const { data, error } = await supabase
           .from("posts")
           .select("id, content, username, mentions, created_at")
-          .contains("mentions", [currentUser]) // Fetch mentions
+          .contains("mentions", [currentUser]) 
           .order("created_at", { ascending: false });
 
         if (error) {
           console.error("Error fetching mentions:", error.message);
         }
-        return data || []; // Always return an empty array if no data
+        return data || []; 
       };
 
+      // fetching follows where the user was followed by someone from the followers table 
       const fetchFollows = async () => {
         const { data, error } = await supabase
           .from("followers")
           .select("id, follower_id, following_id, created_at")
-          .eq("following_id", currentUserId) // Fetch follow notifications where the user is being followed
+          .eq("following_id", currentUserId) 
           .order("created_at", { ascending: false });
 
         if (error) {
           console.error("Error fetching follows:", error.message);
         }
 
-        // Map over the follow data and fetch the usernames
+        // fetching the username from the id from the followers table
         const followNotifications = await Promise.all(
           data?.map(async (follow) => {
             const { data: followerData, error: userError } = await supabase
               .from("users")
               .select("username")
-              .eq("id", follow.follower_id) // Fetch username using follower_id (UUID)
+              .eq("id", follow.follower_id) // using followers id for getting the username
               .single();
 
             if (userError) {
-              console.error("Error fetching username for follower:", userError.message);
+              console.error("Error getting follower username:", userError.message);
             }
 
             return {
               type: "follow",
-              sender_username: followerData?.username || "Unknown User", // Use the username of the follower
+              sender_username: followerData?.username || "Unknown User", 
               created_at: follow.created_at,
             };
           }) || []
@@ -88,13 +90,13 @@ const NotificationsPage: React.FC = () => {
         return followNotifications;
       };
 
-      // Combine mentions and follows notifications
+      
       const fetchNotifications = async () => {
         const mentions = await fetchMentions();
         const follows = await fetchFollows();
 
-        // Combine both mentions and follows into a single notifications array
-        const combinedNotifications = [
+        
+        const Notifications = [
           ...mentions.map((mention) => ({
             type: "mention",
             sender_username: mention.username,
@@ -103,12 +105,12 @@ const NotificationsPage: React.FC = () => {
           })),
           ...follows.map((follow) => ({
             type: "follow",
-            sender_username: follow.sender_username, // Use the username from the follows
+            sender_username: follow.sender_username, 
             created_at: follow.created_at,
           })),
         ];
 
-        setNotifications(combinedNotifications);
+        setNotifications(Notifications); 
       };
 
       fetchNotifications();
@@ -118,7 +120,7 @@ const NotificationsPage: React.FC = () => {
   return (
     <div className="w-full max-w-md mx-auto bg-white p-6 items-center">
       <header className="w-full flex justify-center mb-4 items-center">
-        <NavButtons /> {/* Use the reusable NavButtons component */}
+        <NavButtons /> 
       </header>
       <h2 className="text-2xl font-semibold mb-6 text-center">Notifications</h2>
 
@@ -126,9 +128,12 @@ const NotificationsPage: React.FC = () => {
         {notifications.length === 0 ? (
           <p className="text-center text-gray-500">No notifications yet.</p>
         ) : (
+          
+
           notifications.map((notification) => (
             <div key={notification.created_at} className="flex items-center justify-between border-b py-4">
               <div className="flex items-center">
+                {/* icons for notification (mention or follower) */}
                 <div className="bg-blue-200 p-2 rounded-full">
                   {notification.type === "mention" ? (
                     <HiAtSymbol className="text-blue-600" size={20} />
@@ -136,13 +141,14 @@ const NotificationsPage: React.FC = () => {
                     <HiUserAdd className="text-green-500" size={20} />
                   )}
                 </div>
+              
                 <div className="ml-4">
                   <p className="font-semibold text-gray-800">
-                    {notification.sender_username} {notification.type === "follow" ? "followed you" : "mentioned you"}
+                    {notification.sender_username}{" "}
+                    {notification.type === "follow" ? "followed you" : "mentioned you"}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-gray-500">{/* Optionally, add timestamp or icon logic */}</div>
             </div>
           ))
         )}
@@ -152,6 +158,7 @@ const NotificationsPage: React.FC = () => {
 };
 
 export default NotificationsPage;
+
 
 
 

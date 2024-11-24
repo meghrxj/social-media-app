@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient"; // Ensure you've set up Supabase client
-import { MagnifyingGlassIcon } from '@heroicons/react/24/solid'; // Importing search icon from Heroicons
-import NavButtons from "../components/NavButtons"; // Import the reusable NavButtons component
+import { supabase } from "../supabaseClient"; 
+import { MagnifyingGlassIcon } from '@heroicons/react/24/solid'; 
+import NavButtons from "../components/NavButtons"; 
 
 const People = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -10,7 +10,7 @@ const People = () => {
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const [userCounts, setUserCounts] = useState<{ [key: string]: { followersCount: number; followingCount: number } }>({});
 
-  // Fetch the list of users based on the search term
+  // fetch the list of users from the users table but using suggestions as user types 
   const fetchUsers = async () => {
     if (searchTerm.trim() === "") {
       setUsers([]);
@@ -28,7 +28,6 @@ const People = () => {
     }
 
     setUsers(data || []);
-    // Fetch counts for each user
     for (const user of data || []) {
       const counts = await fetchCounts(user.id);
       setUserCounts((prev) => ({
@@ -38,7 +37,7 @@ const People = () => {
     }
   };
 
-  // Fetch current user's ID
+  // get current user id for temporary use
   const fetchUserId = async () => {
     const { data } = await supabase.auth.getUser();
     if (data?.user) {
@@ -46,7 +45,7 @@ const People = () => {
     }
   };
 
-  // Fetch the list of users the current user follows
+  // fetching the list of following of the user from the id
   const fetchFollowedUsers = async () => {
     if (!userId) return;
 
@@ -64,7 +63,7 @@ const People = () => {
     setFollowedUsers(followedSet);
   };
 
-  // Fetch followers and following count for each user
+  // fetching followers and following count for each user
   const fetchCounts = async (userId: string) => {
     const { data: followerData } = await supabase
       .from("followers")
@@ -82,11 +81,11 @@ const People = () => {
     };
   };
 
-  // Handle follow/unfollow action
+  // FOLLOW AND UNFOLLOW FUNCTION
   const handleFollow = async (targetUserId: string) => {
     if (!userId) return;
 
-    // If the user is already following, unfollow
+    // checking if user already follows 
     if (followedUsers.has(targetUserId)) {
       const { error } = await supabase
         .from("followers")
@@ -104,7 +103,8 @@ const People = () => {
         return newFollowed;
       });
     } else {
-      // Otherwise, follow
+      
+      // Follow action if user doesnt follow them
       const { error } = await supabase
         .from("followers")
         .insert([{ follower_id: userId, following_id: targetUserId }]);
@@ -121,7 +121,7 @@ const People = () => {
       });
     }
 
-    // After follow/unfollow, re-fetch counts
+    // refetching counts after follow/unfollow action
     const counts = await fetchCounts(targetUserId);
     setUserCounts((prev) => ({
       ...prev,
@@ -148,13 +148,13 @@ const People = () => {
       <div className="w-full max-w-xl p-4">
       <header className="w-full flex justify-between mb-4 items-center">
         <h1 className="text-2xl font-semibold">IGX</h1>
-        <NavButtons /> {/* Use the reusable NavButtons component */}
+        <NavButtons /> 
       </header>
-        {/* Search bar */}
+  
         <div className="relative mb-6">
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder="Search users"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -172,7 +172,7 @@ const People = () => {
             users.map((user) => {
               const counts = userCounts[user.id] || { followersCount: 0, followingCount: 0 };
 
-              // Don't show follow/unfollow button for logged-in user
+              // action button hidden for the logged in user in the search menu
               if (user.id === userId) {
                 return (
                   <div key={user.id} className="flex justify-between items-center p-4 border-b border-gray-200 bg-white rounded-lg shadow-md">

@@ -1,26 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { FiLogOut } from 'react-icons/fi'; // Logout icon
-import { FaRegCalendarAlt } from 'react-icons/fa'; // Date icon
-import { HiOutlineUserCircle } from 'react-icons/hi'; // Profile icon
-import NavButtons from "../components/NavButtons"; // Import the reusable NavButtons component
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { FiLogOut } from 'react-icons/fi'; 
+import { FaRegCalendarAlt } from 'react-icons/fa'; 
+import { HiOutlineUserCircle } from 'react-icons/hi'; 
+import NavButtons from "../components/NavButtons"; 
+import { useNavigate } from 'react-router-dom'; 
 
 const Profile: React.FC = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
-        navigate('/'); // Redirect to login if no user
+        navigate('/'); // Redirect incase of unauthorized access
         return;
       }
-
+        //fetching user details to show on profile
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
@@ -31,7 +31,8 @@ const Profile: React.FC = () => {
         if (userError) {
           throw userError;
         }
-
+        
+        //after fetching using the data to show details of users like username, post fetched from userid from above func
         setUserProfile(userData);
 
         const { data: userPosts, error: postsError } = await supabase
@@ -52,14 +53,15 @@ const Profile: React.FC = () => {
     };
 
     fetchProfile();
-  }, [navigate]); // Add navigate as a dependency
+  }, [navigate]); 
 
+    //LOGOUT FUNCTION (using supabase for signout)
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error signing out:', error.message);
     } else {
-      navigate('/'); // Use navigate instead of window.location.href
+      navigate('/');
     }
   };
 
@@ -68,10 +70,9 @@ const Profile: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white">
-      {/* Profile Header */}
       <header className="w-full flex justify-between mb-4 items-center">
         <h1 className="text-2xl font-semibold">IGX</h1>
-        <NavButtons /> {/* Use the reusable NavButtons component */}
+        <NavButtons /> 
       </header>
 
       <div className="flex flex-col items-center mb-6">
@@ -83,7 +84,7 @@ const Profile: React.FC = () => {
         )}
       </div>
 
-      {/* Logout Button */}
+      {/* Logout button */}
       <div className="flex justify-center mb-8">
         <button
           onClick={handleLogout}
@@ -94,7 +95,7 @@ const Profile: React.FC = () => {
         </button>
       </div>
 
-      {/* Posts Section */}
+      {/* Posts made by the user*/}
       <div>
         <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Your Posts</h2>
         {posts.length > 0 ? (
@@ -113,7 +114,7 @@ const Profile: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500">You haven’t posted anything yet.</p>
+          <p className="text-center text-gray-500">No posts yet.</p>
         )}
       </div>
     </div>

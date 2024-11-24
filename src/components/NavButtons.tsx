@@ -29,5 +29,5 @@ const NavButtons: React.FC = () => {
     </nav>
   );
 };
-
+ 
 export default NavButtons;

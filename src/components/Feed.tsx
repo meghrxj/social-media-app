@@ -12,7 +12,7 @@ const Feed: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  // Fetch posts
+  // fetching posts details from the posts table
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase
@@ -26,7 +26,7 @@ const Feed: React.FC = () => {
     fetchPosts();
   }, []);
 
-  // Fetch usernames
+  // fetching username from the users table
   useEffect(() => {
     const fetchUsernames = async () => {
       const { data, error } = await supabase.from("users").select("username");
@@ -36,7 +36,7 @@ const Feed: React.FC = () => {
     fetchUsernames();
   }, []);
 
-  // Fetch current user's username
+  // fetching username of the current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const { data, error } = await supabase.auth.getUser();
@@ -56,14 +56,14 @@ const Feed: React.FC = () => {
 
   const handleInputChange = (value: string) => {
     setContent(value);
-
+  //MENTION FEATURE (Using @ to mention a user)
     const mentionMatch = value.match(/@(\w*)$/);
     if (mentionMatch) {
       const query = mentionMatch[1].toLowerCase();
       const filteredUsernames = usernames.filter((username) =>
         username.toLowerCase().startsWith(query)
       );
-      setSuggestions(filteredUsernames);
+      setSuggestions(filteredUsernames); //showing suggestions based on the username for mentioning a user
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
@@ -75,6 +75,7 @@ const Feed: React.FC = () => {
     setShowSuggestions(false);
   };
 
+  //post function to create new post and also updating the posts table on supabase
   const handlePostSubmit = async () => {
     const { data, error: userError } = await supabase.auth.getUser();
     if (userError || !data?.user) return;
@@ -111,6 +112,7 @@ const Feed: React.FC = () => {
     }
   };
 
+    //highlighting the mentions if user is being mentioned the i used red and if user has mentioned someone i used blue 
   const highlightMentions = (text: string) => {
     const mentionRegex = /@(\w+)/g;
     return text.split(mentionRegex).map((part, index) =>
@@ -126,7 +128,7 @@ const Feed: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center p-4 max-w-4xl mx-auto bg-gray-100 rounded-lg shadow-lg space-y-6">
-      {/* Posting Section */}
+      {/* create post */}
       <div className="w-full bg-white p-4 rounded-lg shadow-md relative">
         <h2 className="text-xl font-semibold mb-4">Create a Post</h2>
         <textarea
@@ -152,7 +154,7 @@ const Feed: React.FC = () => {
           Post
         </button>
 
-        {/* Suggestions */}
+        {/* mention suggestions */}
         {showSuggestions && (
           <div className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg w-full">
             {suggestions.map((username, index) => (
@@ -168,7 +170,7 @@ const Feed: React.FC = () => {
         )}
       </div>
 
-      {/* Feed Section */}
+      {/* feed section */}
       <div className="w-full">
         <h2 className="text-2xl font-semibold mb-4">Your Feed</h2>
         {posts.length === 0 ? (

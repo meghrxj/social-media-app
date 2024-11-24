@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // Ensure you import your Supabase client
+import { supabase } from '../supabaseClient'; 
 import { GraphQLClient } from 'graphql-request';
 
-const SUPABASE_GRAPHQL_URL = 'https://gltjnfbbnsgthusrtrvu.supabase.co/graphql/v1'; // GraphQL URL
+// GRAPHQL Endpoints (will hide the creds later on in the .env)
+const SUPABASE_GRAPHQL_URL = 'https://gltjnfbbnsgthusrtrvu.supabase.co/graphql/v1'; 
 const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsdGpuZmJibnNndGh1c3J0cnZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIxMjA2OTAsImV4cCI6MjA0NzY5NjY5MH0.6LXpI47tJ9uxXpUiX6JI_elFWISM1Jp23hmYm-0x0-o'; // API Key
 
 const Username = () => {
@@ -13,7 +14,7 @@ const Username = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Fetch the session and check if the user is logged in
+  // Fetch the session details and check if the user is logged in
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -22,17 +23,17 @@ const Username = () => {
           throw new Error('No session available');
         }
         const session = data.session;
-        setUser(session.user); // Save user to state
+        setUser(session.user); // saving the user to a session state 
       } catch (err: any) {
         console.error(err);
-        navigate('/'); // Redirect to login if no session
+        navigate('/'); // navigating back incase of no session or unathorized access
       }
     };
 
     fetchUser();
   }, [navigate]);
 
-  // Handle saving the username
+  // saving the username function
   const handleSaveUsername = async () => {
     if (!user) {
       console.error('No user is logged in!');
@@ -42,26 +43,26 @@ const Username = () => {
     setLoading(true);
 
     try {
-      // Ensure access_token exists
+      // checking token accesss
       const session = await supabase.auth.getSession();
       if (!session.data.session?.access_token) {
         throw new Error('No access token available');
       }
 
-      // Check if user ID matches session user ID to ensure correct user
+      // checking if the user id matches with the session user id for authorization 
       if (user.id !== session.data.session.user.id) {
         throw new Error('User ID mismatch!');
       }
 
-      // Set up the GraphQL Client with the session's access token
+      // using session access token for graphql 
       const client = new GraphQLClient(SUPABASE_GRAPHQL_URL, {
         headers: {
-          apiKey: SUPABASE_API_KEY, // Provided API Key
-          Authorization: `Bearer ${session.data.session.access_token}`, // Correct token usage
+          apiKey: SUPABASE_API_KEY, 
+          Authorization: `Bearer ${session.data.session.access_token}`, // token authorization using JWT
         },
       });
 
-      // Corrected GraphQL Mutation to update only the username
+      // Graphql Mutation for updating the username 
       const mutation = `
         mutation UpdateUsername($set: usersUpdateInput!, $filter: usersFilter!) {
           updateusersCollection(set: $set, filter: $filter) {
@@ -70,20 +71,20 @@ const Username = () => {
         }
       `;
 
+      //variables for the mutation set( for passing the username ) and fileter(for checking if the id matches the users id)
       const variables = {
         set: {
-          username, // Pass the entered username to the set field
+          username, 
         },
         filter: {
-          id: { eq: user.id }, // Using 'eq' instead of '_eq'
+          id: { eq: user.id }, 
         },
       };
 
-      // Execute the GraphQL mutation to update the username
+      // finally executing the graphql mutation 
       const response = await client.request(mutation, variables);
-      console.log('Username updated successfully:', response);
+      navigate('/profile'); 
 
-      navigate('/profile'); // Redirect to the profile page after success
     } catch (err: any) {
       console.error('Failed to save username:', err);
       setError(err.message || 'An error occurred while saving your username.');
