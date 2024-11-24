@@ -1,58 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient'; // Ensure you import your Supabase client
+import { GraphQLClient } from 'graphql-request';
 
-const Username: React.FC = () => {
+const SUPABASE_GRAPHQL_URL = 'https://gltjnfbbnsgthusrtrvu.supabase.co/graphql/v1'; // GraphQL URL
+const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsdGpuZmJibnNndGh1c3J0cnZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIxMjA2OTAsImV4cCI6MjA0NzY5NjY5MH0.6LXpI47tJ9uxXpUiX6JI_elFWISM1Jp23hmYm-0x0-o'; // API Key
+
+const Username = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null); // Track the user object
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
 
+  // Fetch the session and check if the user is logged in
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
-        navigate('/'); // Redirect to login if no user
-      } else {
-        setUser(user); // Set the user object to state
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error || !data.session) {
+          throw new Error('No session available');
+        }
+        const session = data.session;
+        setUser(session.user); // Save user to state
+      } catch (err: any) {
+        console.error(err);
+        navigate('/'); // Redirect to login if no session
       }
     };
-    fetchUser();
-  }, [navigate]); // Add navigate as a dependency
 
+    fetchUser();
+  }, [navigate]);
+
+  // Handle saving the username
   const handleSaveUsername = async () => {
     if (!user) {
-      console.log('No user is logged in!');
+      console.error('No user is logged in!');
       return;
     }
 
     setLoading(true);
+
     try {
-      // Fetch the user's email from auth.users table
-      const { data: authUser, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        throw new Error('Failed to get user data');
+      // Ensure access_token exists
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No access token available');
       }
 
-      // Insert username into public.users table with email
-      const { error } = await supabase
-        .from('users')
-        .upsert({
-          id: user.id,
-          email: authUser?.user?.email, // Add email to the upsert data
-          username
-        })
-        .single();
-
-      if (error) {
-        throw error;
+      // Check if user ID matches session user ID to ensure correct user
+      if (user.id !== session.data.session.user.id) {
+        throw new Error('User ID mismatch!');
       }
 
-      console.log('Username saved successfully!');
-      navigate('/profile'); // Redirect to profile page after saving username
+      // Set up the GraphQL Client with the session's access token
+      const client = new GraphQLClient(SUPABASE_GRAPHQL_URL, {
+        headers: {
+          apiKey: SUPABASE_API_KEY, // Provided API Key
+          Authorization: `Bearer ${session.data.session.access_token}`, // Correct token usage
+        },
+      });
+
+      // Corrected GraphQL Mutation to update only the username
+      const mutation = `
+        mutation UpdateUsername($set: usersUpdateInput!, $filter: usersFilter!) {
+          updateusersCollection(set: $set, filter: $filter) {
+            affectedCount
+          }
+        }
+      `;
+
+      const variables = {
+        set: {
+          username, // Pass the entered username to the set field
+        },
+        filter: {
+          id: { eq: user.id }, // Using 'eq' instead of '_eq'
+        },
+      };
+
+      // Execute the GraphQL mutation to update the username
+      const response = await client.request(mutation, variables);
+      console.log('Username updated successfully:', response);
+
+      navigate('/profile'); // Redirect to the profile page after success
     } catch (err: any) {
-      setError(err.message);
+      console.error('Failed to save username:', err);
+      setError(err.message || 'An error occurred while saving your username.');
     } finally {
       setLoading(false);
     }
@@ -81,6 +115,29 @@ const Username: React.FC = () => {
 };
 
 export default Username;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

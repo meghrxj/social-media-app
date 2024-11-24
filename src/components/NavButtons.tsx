@@ -5,7 +5,7 @@ import { HiHome, HiBell, HiUsers, HiUser } from "react-icons/hi";
 const NavButtons: React.FC = () => {
   const navigate = useNavigate();
 
-  // Define navigation items
+  // Navigation Menu Items
   const navItems = [
     { label: "Home", path: "/home", icon: <HiHome size={24} /> },
     { label: "Notifications", path: "/notification", icon: <HiBell size={24} /> },
@@ -13,6 +13,7 @@ const NavButtons: React.FC = () => {
     { label: "Profile", path: "/profile", icon: <HiUser size={24} /> },
   ];
 
+  // Function for onClick to navigate using react router
   return (
     <nav className="flex space-x-6">
       {navItems.map((item) => (
