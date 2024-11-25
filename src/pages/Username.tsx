@@ -14,7 +14,7 @@ const Username = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Fetch the session details and check if the user is logged in
+  // Fetch the session details 
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -43,7 +43,7 @@ const Username = () => {
     setLoading(true);
 
     try {
-      // checking token accesss
+      // fetching
       const session = await supabase.auth.getSession();
       if (!session.data.session?.access_token) {
         throw new Error('No access token available');

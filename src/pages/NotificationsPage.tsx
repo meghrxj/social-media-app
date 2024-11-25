@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { HiUserAdd, HiAtSymbol } from "react-icons/hi"; 
-import { useNavigate } from "react-router-dom"; 
 import NavButtons from "../components/NavButtons"; 
 
 const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]); 
   const [currentUser, setCurrentUser] = useState<string | null>(null); 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null); 
-  const navigate = useNavigate();
 
   // fetch the logged-in user details (username and id)
   useEffect(() => {
